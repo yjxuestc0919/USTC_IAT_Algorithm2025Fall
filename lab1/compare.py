@@ -19,9 +19,9 @@ with open("data.txt") as f:
     nums = list(map(int, f.readline().split()))
 
 algorithms = {
-    "Bubble Sort": bubble_sort,
-    "Selection Sort": select_sort,
-    "Insertion Sort": insert_sort,
+    # "Bubble Sort": bubble_sort,
+    # "Selection Sort": select_sort,
+    # "Insertion Sort": insert_sort,
     "Merge Sort": merge_sort,
     "Heap Sort": heap_sort,
     "Quick Sort": lambda nums: quick_sort(nums, 0, len(nums) - 1),
@@ -34,6 +34,8 @@ for name, func in algorithms.items():
     start = time.time()
     if "Quick Sort" in name:
         func(nums_copy)
+    elif name == "Merge Sort":
+        func(nums_copy, 0, len(nums_copy) - 1)
     else:
         nums_copy = func(nums_copy)
     end = time.time()
