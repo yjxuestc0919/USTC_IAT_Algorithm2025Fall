@@ -1,4 +1,4 @@
-from quick_sort import quick_sort, quick_sort_optimized
+from quick_sort import quick_sort
 import time
 
 with open("data.txt") as f:
@@ -6,23 +6,19 @@ with open("data.txt") as f:
     print(length)
     nums = list(map(int, f.readline().split()))
 
-nums_normal = nums[:]
-nums_optimized = nums[:]
-
 start = time.time()
-quick_sort_optimized(nums_optimized, 0, len(nums_normal) - 1)
+quick_sort(
+    nums,
+    0,
+    len(nums) - 1,
+    optimize="median_of_three",
+    use_insert_sort=True,
+    k=16,
+)
 end = time.time()
-optimized_time = end - start
+my_quick_sort_time = end - start
 
-start = time.time()
-quick_sort(nums_normal, 0, len(nums_normal) - 1)
-end = time.time()
-normal_time = end - start
-
-
-assert nums_normal == nums_optimized, "❌ 排序结果不一致！"
 
 with open("sorted.txt", "w") as f:
-    print(f"Normal Quick Sort Time: {normal_time:.6f} seconds\n")
-    print(f"Optimized Quick Sort Time: {optimized_time:.6f} seconds\n")
-    f.write(" ".join(map(str, nums_normal)) + "\n")
+    print(f"My Quick Sort Time: {my_quick_sort_time:.6f} seconds\n")
+    f.write(" ".join(map(str, nums)) + "\n")

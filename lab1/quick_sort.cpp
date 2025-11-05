@@ -1,82 +1,113 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
 #include <algorithm>
 #include <chrono>
-#include <utility>
-
+#include <cstdlib>
+#include <ctime>
+#include <fstream>
+#include <iostream>
+#include <string>
+#include <vector>
 using namespace std;
 
-int partition_basic(vector<int>& nums, int low, int high) {
-    int pivot = nums[high];
-    int i = low - 1; // [low..i] 是所有小于 pivot 的区域
+inline void swap_int(int& a, int& b) {
+    int tmp = a;
+    a = b;
+    b = tmp;
+}
 
-    for (int j = low; j < high; ++j) {
-        if (nums[j] <= pivot) {
-            ++i;
-            swap(nums[i], nums[j]);
-        }
+int partition_base(vector<int>& nums, int left, int right) {
+    int pivot = nums[left];
+    int i = left+1, j = right;
+    while (true) {
+        while (i <= j && nums[j] > pivot) j--;
+        while (i <= j && nums[i] < pivot) i++;
+        if (i >= j) break;
+        swap_int(nums[i], nums[j]);
+        j -= 1;
+        i += 1;
     }
-
-    // 把 pivot 放到中间（i+1 位置）
-    swap(nums[i + 1], nums[high]);
-    return i + 1;
+    swap_int(nums[j], nums[left]);
+    return j;
 }
 
-void quick_sort(vector<int>& nums, int low, int high) {
-    if (low >= high) return;
-
-    int part_index = partition_basic(nums, low, high);
-    quick_sort(nums, low, part_index - 1);
-    quick_sort(nums, part_index + 1, high);
+int random_partition(vector<int>& nums, int left, int right) {
+    int pivot_index = rand() % (right - left + 1) + left;
+    swap_int(nums[left], nums[pivot_index]);
+    int pivot = nums[left];
+    int i = left+1, j = right;
+    while (true) {
+        while (i <= j && nums[j] > pivot) j--;
+        while (i <= j && nums[i] < pivot) i++;
+        if (i >= j) break;
+        swap_int(nums[i], nums[j]);
+        j -= 1;
+        i += 1;
+    }
+    swap_int(nums[j], nums[left]);
+    return j;
 }
 
-void insertion_sort(vector<int>& nums, int low, int high) {
-    for (int i = low + 1; i <= high; ++i) {
-        int key = nums[i];
+int medium_num(int s, int m, int l) {
+    if ((s <= m && m <= l) || (l <= m && m <= s)) return m;
+    else if ((m <= s && s <= l) || (l <= s && s <= m)) return s;
+    else return l;
+}
+
+int median_of_three_partition(vector<int>& nums, int left, int right) {
+    int mid = left + (right - left) / 2;
+    int medium_value = medium_num(nums[left], nums[mid], nums[right]);
+
+    int pivot_index;
+    if (medium_value == nums[mid]) pivot_index = mid;
+    else if (medium_value == nums[right]) pivot_index = right;
+    else pivot_index = left;
+
+    swap_int(nums[left], nums[pivot_index]);
+    int pivot = nums[left];
+
+    int i = left+1, j = right;
+    while (true) {
+        while (i <= j && nums[j] > pivot) j--;
+        while (i <= j && nums[i] < pivot) i++;
+        if (i >= j) break;
+        swap_int(nums[i], nums[j]);
+        j -= 1;
+        i += 1;
+    }
+    swap_int(nums[j], nums[left]);
+    return j;
+}
+
+void insert_sort(vector<int>& nums) {
+    for (int i = 1; i < nums.size(); i++) {
+        int cur = nums[i];
         int j = i - 1;
-        while (j >= low && nums[j] > key) {
+        while (j >= 0 && nums[j] > cur) {
             nums[j + 1] = nums[j];
             j--;
         }
-        nums[j + 1] = key;
+        nums[j + 1] = cur;
     }
 }
 
-pair<int, int> partition_optimized(vector<int>& nums, int low, int high) {
-    // 三数取中
-    int mid = (low + high) / 2;
-    if (nums[low] > nums[mid]) swap(nums[low], nums[mid]);
-    if (nums[low] > nums[high]) swap(nums[low], nums[high]);
-    if (nums[mid] > nums[high]) swap(nums[mid], nums[high]);
-    int pivot = nums[mid];
+void quick_sort(vector<int>& nums, int left, int right,
+                string optimize = "random_pivot",
+                bool use_insert_sort = false,
+                int k = 16) 
+{
+    if (use_insert_sort && right - left <= k) return;
+    if (left >= right) return;
 
-    // 三路划分
-    int lt = low, i = low, gt = high;
-    while (i <= gt) {
-        if (nums[i] < pivot) {
-            swap(nums[lt], nums[i]);
-            lt++;
-            i++;
-        } else if (nums[i] > pivot) {
-            swap(nums[i], nums[gt]);
-            gt--;
-        } else {
-            i++;
-        }
+    int index;
+    if (optimize == "random_pivot") index = random_partition(nums, left, right);
+    else if (optimize == "median_of_three") index = median_of_three_partition(nums, left, right);
+    else index = partition_base(nums, left, right);
+
+    quick_sort(nums, left, index - 1, optimize, use_insert_sort, k);
+    quick_sort(nums, index + 1, right, optimize, use_insert_sort, k);
+
+    if (use_insert_sort && left == 0 && right == nums.size() - 1) {
+        insert_sort(nums);
     }
-    return {lt, gt};
-}
-
-void quick_sort_optimized(vector<int>& nums, int low, int high, int threshold = 10) {
-    if (high - low <= threshold) {
-        insertion_sort(nums, low, high);
-        return;
-    }
-
-    auto [lt, gt] = partition_optimized(nums, low, high);
-    quick_sort_optimized(nums, low, lt - 1, threshold);
-    quick_sort_optimized(nums, gt + 1, high, threshold);
 }
 
 int main() {
@@ -90,33 +121,35 @@ int main() {
     for (int i = 0; i < n; ++i) fin >> nums[i];
     fin.close();
 
-    vector<int> nums_normal = nums;
-    vector<int> nums_optimized = nums;
+    vector<int> quick_sorted = nums;
+    vector<int> std_sorted = nums;
 
-    auto start = chrono::high_resolution_clock::now();
-    quick_sort(nums_normal, 0, n - 1);
-    auto end = chrono::high_resolution_clock::now();
-    double time_normal = chrono::duration<double>(end - start).count();
+    auto start = chrono::steady_clock::now();
+    if (!quick_sorted.empty()) {
+        quick_sort(quick_sorted, 0, static_cast<int>(quick_sorted.size()) - 1,
+                   "median_of_three", true, 70);
+    }
+    auto end = chrono::steady_clock::now();
+    double time_quick = chrono::duration<double>(end - start).count();
 
-    start = chrono::high_resolution_clock::now();
-    quick_sort_optimized(nums_optimized, 0, n - 1, 10);
-    end = chrono::high_resolution_clock::now();
-    double time_optimized = chrono::duration<double>(end - start).count();
+    start = chrono::steady_clock::now();
+    sort(std_sorted.begin(), std_sorted.end());
+    end = chrono::steady_clock::now();
+    double time_std = chrono::duration<double>(end - start).count();
 
-    if (nums_normal != nums_optimized) {
+    if (quick_sorted != std_sorted) {
         cerr << "❌ 排序结果不一致！" << endl;
         return 1;
-    } else {
-        cout << "✅ 排序结果一致！" << endl;
     }
 
     ofstream fout_normal("sorted.txt");
-    for (int x : nums_normal) fout_normal << x << " ";
+    for (int x : quick_sorted) fout_normal << x << " ";
     fout_normal.close();
 
-    cout << "Normal Quick Sort Time: " << time_normal << "s\n";
-    cout << "Optimized Quick Sort Time: " << time_optimized << "s\n";
-    cout << "Speedup: " << time_normal / time_optimized << "x\n";
+    cout << "✅ 排序结果一致！" << '\n';
+    cout << "Quick Sort Time: " << time_quick << "s\n";
+    cout << "std::sort Time: " << time_std << "s\n";
+    cout << "Speedup (std::sort / Quick): " << time_std / time_quick << "x\n";
 
     return 0;
 }
