@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <future>
 using namespace std;
 
 inline void swap_int(int& a, int& b) {
@@ -110,6 +111,42 @@ void quick_sort(vector<int>& nums, int left, int right,
     }
 }
 
+// 并行快速排序
+void quick_sort_parallel(vector<int>& nums, int left, int right,
+                         const string& optimize = "random_pivot",
+                         bool use_insert_sort = false,
+                         int k = 16,
+                         int parallel_threshold = 50000)
+{
+    if (use_insert_sort && right - left <= k) return;
+    if (left >= right) return;
+
+    int index;
+    if (optimize == "random_pivot") index = random_partition(nums, left, right);
+    else if (optimize == "median_of_three") index = median_of_three_partition(nums, left, right);
+    else index = partition_base(nums, left, right);
+
+    // 子区间大小
+    int left_size = index - 1 - left;
+    int right_size = right - (index + 1);
+
+    // 判断是否并行
+    if (left_size > parallel_threshold || right_size > parallel_threshold) {
+        auto fut = std::async(std::launch::async, [&]() {
+            quick_sort_parallel(nums, left, index - 1, optimize, use_insert_sort, k, parallel_threshold);
+        });
+        quick_sort_parallel(nums, index + 1, right, optimize, use_insert_sort, k, parallel_threshold);
+        fut.wait();
+    } else {
+        quick_sort_parallel(nums, left, index - 1, optimize, use_insert_sort, k, parallel_threshold);
+        quick_sort_parallel(nums, index + 1, right, optimize, use_insert_sort, k, parallel_threshold);
+    }
+
+    if (use_insert_sort && left == 0 && right == nums.size() - 1) {
+        insert_sort(nums);
+    }
+}
+
 int main() {
     ios::sync_with_stdio(false);
     cin.tie(nullptr);
@@ -126,8 +163,8 @@ int main() {
 
     auto start = chrono::steady_clock::now();
     if (!quick_sorted.empty()) {
-        quick_sort(quick_sorted, 0, static_cast<int>(quick_sorted.size()) - 1,
-                   "median_of_three", true, 70);
+        quick_sort_parallel(quick_sorted, 0, static_cast<int>(quick_sorted.size()) - 1,
+                   "median_of_three", true, 70, 50000);
     }
     auto end = chrono::steady_clock::now();
     double time_quick = chrono::duration<double>(end - start).count();
