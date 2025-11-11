@@ -16,9 +16,9 @@ quick_sort(
     k=16,
 )
 end = time.time()
-my_quick_sort_time = end - start
+my_quick_sort_time_ms = (end - start) * 1000
 
 
 with open("sorted.txt", "w") as f:
-    print(f"My Quick Sort Time: {my_quick_sort_time:.6f} seconds\n")
+    print(f"My Quick Sort Time: {my_quick_sort_time_ms:.3f} ms\n")
     f.write(" ".join(map(str, nums)) + "\n")

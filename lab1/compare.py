@@ -22,14 +22,16 @@ with open(DATA_PATH) as f:
     nums = list(map(int, f.readline().split()))
 
 algorithms = {
-    # "Bubble Sort": bubble_sort,
-    # "Selection Sort": select_sort,
-    # "Insertion Sort": insert_sort,
+    "Bubble Sort": bubble_sort,
+    "Selection Sort": select_sort,
+    "Insertion Sort": insert_sort,
     "Merge Sort": merge_sort,
     "Heap Sort": heap_sort,
-    "Sort Algorithm in raw python": lambda arr: sorted(arr),
-    # "Quick Sort": lambda arr: quick_sort(arr, 0, len(arr) - 1),
+    # "Sort Algorithm in raw python": lambda arr: sorted(arr),
+    "Quick Sort": lambda arr: quick_sort(arr, 0, len(arr) - 1),
 }
+
+SECONDS_ONLY = {"Bubble Sort", "Selection Sort", "Insertion Sort"}
 
 for name, func in algorithms.items():
     nums_copy = nums[:]
@@ -41,7 +43,10 @@ for name, func in algorithms.items():
     else:
         nums_copy = func(nums_copy)
     elapsed = time.perf_counter() - start
-    print(f"{name} Time: {elapsed:.6f} seconds")
+    if name in SECONDS_ONLY:
+        print(f"{name} Time: {elapsed:.6f} seconds")
+    else:
+        print(f"{name} Time: {elapsed * 1000:.3f} ms")
 
 print()
 print("Quick Sort Pivot/Insertion Comparison")

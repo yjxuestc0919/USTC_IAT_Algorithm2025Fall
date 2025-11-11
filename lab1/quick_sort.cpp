@@ -167,12 +167,12 @@ int main() {
                    "median_of_three", true, 70, 50000);
     }
     auto end = chrono::steady_clock::now();
-    double time_quick = chrono::duration<double>(end - start).count();
+    double time_quick_ms = chrono::duration<double>(end - start).count() * 1000.0;
 
     start = chrono::steady_clock::now();
     sort(std_sorted.begin(), std_sorted.end());
     end = chrono::steady_clock::now();
-    double time_std = chrono::duration<double>(end - start).count();
+    double time_std_ms = chrono::duration<double>(end - start).count() * 1000.0;
 
     if (quick_sorted != std_sorted) {
         cerr << "❌ 排序结果不一致！" << endl;
@@ -184,9 +184,9 @@ int main() {
     fout_normal.close();
 
     cout << "✅ 排序结果一致！" << '\n';
-    cout << "Quick Sort Time: " << time_quick << "s\n";
-    cout << "std::sort Time: " << time_std << "s\n";
-    cout << "Speedup (std::sort / Quick): " << time_std / time_quick << "x\n";
+    cout << "Quick Sort Time: " << time_quick_ms << " ms\n";
+    cout << "std::sort Time: " << time_std_ms << " ms\n";
+    cout << "Speedup (std::sort / Quick): " << time_std_ms / time_quick_ms << "x\n";
 
     return 0;
 }
