@@ -15,6 +15,7 @@ min_pair = None
 min_distance = float("inf")
 
 start_time = time.time()
+# 暴力检索
 for i in range(len(data)):
     for j in range(i + 1, len(data)):
         xi, yi = data[i][1], data[i][2]

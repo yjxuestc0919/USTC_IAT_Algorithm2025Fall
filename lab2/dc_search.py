@@ -1,3 +1,4 @@
+import time
 data = []
 
 with open("data.txt", "r") as f:
@@ -23,6 +24,7 @@ def closest_pair_rec(Px, Py):
     '''
     Px, Py: List[tuple]
     '''
+    # 递归到底情况
     if len(Px) <= 3:
         min_distance = float("inf")
         min_pair = None
@@ -43,6 +45,7 @@ def closest_pair_rec(Px, Py):
     Ly = [pair for pair in Py if pair[1] <= mid_x[1]]
     Ry = [pair for pair in Py if pair[1] > mid_x[1]]
 
+    # 递归的处理左右两边的情况
     d_left, left_pair = closest_pair_rec(Lx, Ly)
     d_right, right_pair = closest_pair_rec(Rx, Ry)
 
@@ -56,6 +59,7 @@ def closest_pair_rec(Px, Py):
     # Strip之间的情况
     strip_points = [p for p in Py if abs(p[1] - mid_x[1]) < min_distance]
 
+    # 最多检查7个点
     for i in range(len(strip_points)):
         for j in range(i+1, min(i+8, len(strip_points))):
             cur_distance = get_distance(strip_points[i], strip_points[j])
@@ -64,6 +68,10 @@ def closest_pair_rec(Px, Py):
                 min_pair = (strip_points[i], strip_points[j])
     return min_distance, min_pair
 
+start_time = time.time()
 min_distance, min_pair = closest_pair_rec(Px, Py)
-print(min_distance)
-print(min_pair)
+end_time = time.time()
+elapsed_time = (end_time - start_time) 
+print(f"{min_pair[0][0]} {min_pair[0][1]} {min_pair[0][2]}")
+print(f"{min_pair[1][0]} {min_pair[1][1]} {min_pair[1][2]}")
+print(f"Time taken: {elapsed_time:.3f} s")
