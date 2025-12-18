@@ -80,3 +80,45 @@ def bfs_adj_list(adj):
 
     print("Adjacency List BFS time:", end_time - start_time, "seconds")
     print("Visited nodes:", len(visited))
+
+# 针对 u,v 形式数据构造邻接表（有向图）
+def build_directed_adj_list(filename):
+    adj = {}
+
+    with open(filename, "r") as f:
+        for line in f:
+            if not line.strip():
+                continue
+
+            u, v = map(int, line.strip().split(","))
+
+            if u not in adj:
+                adj[u] = []
+            if v not in adj:
+                adj[v] = []   # 确保 v 也作为一个节点存在
+
+            adj[u].append(v)   # 有向边 u -> v
+
+    return adj
+
+# 针对 CSV 邻接表的 BFS
+def bfs_directed_adj_list(adj, start_node=None):
+    if start_node is None:
+        start_node = next(iter(adj))  # 默认选第一个节点
+
+    queue = deque([start_node])
+    visited = set([start_node])
+
+    start_time = time.time()
+
+    while queue:
+        node = queue.popleft()
+        for neighbor in adj[node]:
+            if neighbor not in visited:
+                visited.add(neighbor)
+                queue.append(neighbor)
+
+    end_time = time.time()
+
+    print("CSV Adjacency List BFS time:", end_time - start_time, "seconds")
+    print("Visited nodes:", len(visited))
